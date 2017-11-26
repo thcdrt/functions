@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<title>Chatbot météo</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-title" content="chatbot météo">
+		<link rel="apple-touch-icon" href="https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/sun-1075154_640.png">
+		<link rel="icon" sizes="196x196" href="https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/sun-1075154_640.png">
+		<link rel="shortcut icon" type="image/png" href="https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/sun-1075154_640.png">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.7/semantic.min.css">
+	</head><body>
+
+ <style>
+
+.container {
+	padding-top: 1em;
+	padding-bottom: 1em;
+}
+
+.segment {
+  	height: 100%;
+  	width: 100%;
+  	overflow-y: hidden;
+}
+
+.ui .comments {
+  	overflow-y: scroll;
+  	max-width: 1127px;
+}
+
+.chatbar > input  {
+  border: 0px;
+  width: 100%;
+  height: 40px
+}
+
+.avatar .img {
+	height: 42px;
+	width: 42px;
+}
+
+#loader {
+	margin-bottom: 10px;
+}
+
+</style>
+
+<div id="container" class="ui main container">
+	<div class="ui segment">
+		<h3 class="ui dividing header"><img src="https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/sun-1075154_640.png" style="margin-right: 15px; margin-bottom: 10px">Chatbot météo</h3>
+		<div id="commentsWrapper" class="ui comments">
+			<div id="comments">
+			</div>
+			<div id="loader" class="ui disabled centered inline loader"></div>
+		</div>
+	</div>
+	<div class="ui fluid input chatbar">
+    	<input type="text" id="input" autocorrect="off" autocapitalize="off" onchange="getMeteo()" placeholder="Send a message...">
+    </div>
+</div>
+
+<script>
+function getMeteo() {
+	var input = document.getElementById('input')
+	var userMsg = input.value
+	displayUserMessage(userMsg)
+	input.value = ""
+
+	var loader = document.getElementById('loader')
+	loader.classList.add('active')
+    req('POST', '{{ chatbot_url }}', userMsg, displayBotMessage)
+}
+
+function displayUserMessage(message) {
+	comments = document.getElementById("comments")
+    comments.innerHTML += '<div class="comment">\
+		    	<a class="avatar"><img src="https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/user.jpg"></a>\
+		    	<div class="content">\
+		      		<a class="author">You</a>\
+		      		<div class="metadata">\
+		        		<span class="date">' + getCurrentTime() + '</span>\
+		      		</div>\
+		      		<div class="text">\
+		        		' + message + '\
+		      		</div>\
+		    	</div>\
+		  	</div>'
+	scrollDown()
+}
+
+function displayBotMessage(message) {
+	avatar = "https://storage.gra3.cloud.ovh.net/v1/AUTH_dc489e0161bb4ef9b7f9dd0d6da9efbb/Examples/weather-chatbot/bot.png"
+
+	if (message.condition_icon != undefined) {
+		avatar = message.condition_icon
+	}
+
+	if (message.message != undefined) {
+		message = message.message
+	}
+
+    comments = document.getElementById("comments")
+    comments.innerHTML += '<div class="comment">\
+	    	<a class="avatar"><img src="' + avatar + '"></a>\
+	    	<div class="content">\
+	      		<a class="author">Bot</a>\
+	      		<div class="metadata">\
+	        		<span class="date">' + getCurrentTime() + '</span>\
+	      		</div>\
+	      		<div class="text">\
+	        		' + message +'\
+	      		</div>\
+	    	</div>\
+	  	</div>'
+	loader.classList.remove('active')
+	scrollDown()
+}
+
+// Utils
+function req(method, url, body, callback) {
+        const req = new XMLHttpRequest()
+        req.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var respJSON = JSON.parse(req.responseText)
+                callback(respJSON)
+            } else if (this.readyState == 4){
+            	callback(req.responseText)
+            }
+        }
+        req.open(method, url, true);
+        req.send(body);
+    }
+
+function getCurrentTime() {
+	return new Date().toLocaleTimeString('en-US', { hour12: false, hour: "numeric", minute: "numeric"});
+}
+
+function scrollDown() {
+	var objDiv = document.getElementById("commentsWrapper");
+	objDiv.scrollTop = objDiv.scrollHeight;
+}
+
+displayBotMessage("Bonjour, vous pouvez me poser des questions sur la météo tel que:\
+<br>- Quel temps fera-t-il jeudi à Paris ?\
+<br>- Quelle sera la météo à Toulouse demain ?")
+
+document.getElementById("commentsWrapper").style.height = window.innerHeight-200 + "px"
+document.getElementById("input").focus(); 
+</script>
+</body></html>

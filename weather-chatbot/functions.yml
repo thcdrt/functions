@@ -1,0 +1,8 @@
+functions:
+  weather-chatbot:
+    runtime: nodejs
+    handler: weather-chatbot.getMeteo
+    environment:
+      WIT_TOKEN: ${env:WIT_TOKEN}
+      APIXU_TOKEN: ${env:APIXU_TOKEN}
+      CHATBOT_URL: ${env:CHATBOT_URL}
